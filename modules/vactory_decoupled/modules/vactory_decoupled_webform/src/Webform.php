@@ -25,9 +25,11 @@ class Webform
    */
   protected $webformTokenManager;
 
+
   const CONTAINERS = ['webform_flexbox', 'container', 'fieldset', 'details'];
 
-  public function __construct(WebformTokenManager $webformTokenManager) {
+  public function __construct(WebformTokenManager $webformTokenManager)
+  {
     $this->webformTokenManager = $webformTokenManager;
   }
 
@@ -65,8 +67,7 @@ class Webform
       }
       if (in_array($item['#type'], self::CONTAINERS)) {
         $schema[$key] = $this->containersToUiSchema($key, $item, $items);
-      }
-      else {
+      } else {
         $schema[$key] = $this->itemToUiSchema($key, $item, $items);
       }
     }
@@ -76,13 +77,14 @@ class Webform
   /**
    * Containers to ui schema.
    */
-  public function containersToUiSchema($key, $item, $items) {
+  public function containersToUiSchema($key, $item, $items)
+  {
     $fields = [];
     $flexTotal = 0;
     foreach ($items[$key] as $key => $field) {
       if (strpos($key, "#") !== 0) {
         if (array_key_exists('#webform_parent_flexbox', $field) && $field['#webform_parent_flexbox']) {
-          $flexTotal+= array_key_exists('#flex', $field) ? $field['#flex'] : 1;
+          $flexTotal += array_key_exists('#flex', $field) ? $field['#flex'] : 1;
         }
         $fields[$key] = $field;
       }
@@ -130,7 +132,8 @@ class Webform
    *
    * @return array
    */
-  public function resetButtonToUiSchema() {
+  public function resetButtonToUiSchema()
+  {
     $properties = [];
     $properties['hidden'] = !$this->webform->getSetting('form_reset');
     $properties['text'] = t('Reset');
@@ -144,7 +147,8 @@ class Webform
    *
    * @return array
    */
-  public function SubmitbuttonsToUiSchema($item) {
+  public function SubmitbuttonsToUiSchema($item)
+  {
     $properties = [];
     $properties['text'] = isset($item['#submit__label']) ? $item['#submit__label'] : (isset($item['#title']) ? $item['#title'] : '');
     $properties['type'] = $item['#type'];
@@ -161,6 +165,8 @@ class Webform
    */
   private function itemToUiSchema($field_name, $item, $items)
   {
+
+
     $properties = [];
     if (isset($item['#required']) || isset($item['#pattern'])) {
       $properties['validation'] = [];
@@ -202,6 +208,7 @@ class Webform
       'date' => 'date',
       'webform_time' => 'time',
       'processed_text' => 'rawhtml',
+      'entity_autocomplete' => 'entityAutocomplete',
     ];
 
     $htmlInputTypes = [
@@ -336,7 +343,6 @@ class Webform
         $properties['validation']['extensions'] = $filenamed_extensions;
         $properties['extensionsClean'] = $field_extensions;
       }
-
     }
 
     if ($ui_type === 'rawhtml') {
@@ -345,6 +351,29 @@ class Webform
       $properties['attributes'] = $item['#wrapper_attributes'];
     }
 
+    // $cacheTags = [];
+
+    if ($ui_type === 'entityAutocomplete') {
+      $cache_tags = [];
+      $properties['options'] = "";
+      if ($item['#target_type'] == 'taxonomy_term') {
+        $bundles = $item['#selection_settings']['target_bundles'];
+        $bundles = array_values($bundles);
+        $taxonomy_entity = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties([
+          'vid' => $bundles
+        ]);
+        $term_names = [];
+        if (isset($taxonomy_entity) && !empty($taxonomy_entity)) {
+          foreach ($taxonomy_entity as $key => $term) {
+            $term_names[$key] = $term->getName();
+            // $cache_tags = Cache::mergeTags($cache_tags, $term->getCacheTags());
+          }
+
+          $properties['options'] = $this->formatOptions($term_names);
+        }
+      }
+      // TODO content type - content ...
+    }
     return $properties;
   }
 
@@ -386,6 +415,4 @@ class Webform
 
     return $element_plugin;
   }
-
-
 }
