@@ -3,17 +3,18 @@ vactory_rate.vote:
   defaults:
     _controller: '\Drupal\vactory_rate\Controller\VoteController::vote'
   requirements:
-    _permission: 'access content'
+    _permission: 'can vote all'
 vactory_rate.undo_vote:
   path: '/api/rate/undo/{entity_type_id}/{entity_id}'
   defaults:
     _controller: 'Drupal\vactory_rate\Controller\VoteController::undoVote'
   requirements:
-    _permission: 'access content'
+    _permission: 'can undo vote'
 vactory_rate.results:
   path: '/api/rate/results/{entity_type_id}/{entity_id}'
   defaults:
     _controller: 'Drupal\vactory_rate\Controller\VoteController::results'
   requirements:
     _permission: 'access content'
+
 

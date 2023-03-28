@@ -10,4 +10,5 @@ dependencies:
   - flag
   - entityqueue
   - rate
+  - vactory_rate
 package: Vactory
